@@ -18,28 +18,37 @@
 
 <!-- ============== AUTH SCREEN ============== -->
 <div id="auth-screen" class="screen hidden">
-  <div class="auth-card">
-    <p class="brand">Sổ Chi</p>
-    <p class="brand-sub">Sổ ghi thu chi cá nhân của bạn</p>
+  <div class="auth-layout">
+    <div class="auth-decorative">
+      <img src="icon-512.png" alt="" class="auth-decorative-stamp">
+      <p class="auth-decorative-brand">Sổ Chi</p>
+      <p class="auth-decorative-tag">Biết tiền đi đâu mỗi tháng,<br>tiết kiệm sẽ dễ hơn nhiều.</p>
+    </div>
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <p class="brand">Sổ Chi</p>
+        <p class="brand-sub">Sổ ghi thu chi cá nhân của bạn</p>
 
-    <div id="auth-error" class="auth-error hidden"></div>
+        <div id="auth-error" class="auth-error hidden"></div>
 
-    <form id="auth-form">
-      <div class="field">
-        <label for="auth-email">Email</label>
-        <input id="auth-email" type="email" autocomplete="email" required>
+        <form id="auth-form">
+          <div class="field">
+            <label for="auth-email">Email</label>
+            <input id="auth-email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="auth-password">Mật khẩu</label>
+            <input id="auth-password" type="password" autocomplete="current-password" required minlength="6">
+          </div>
+          <button type="submit" id="auth-submit" class="btn btn-primary">Đăng nhập</button>
+        </form>
+
+        <p class="auth-switch">
+          <span id="auth-switch-text">Chưa có tài khoản?</span>
+          <button type="button" id="auth-switch-btn">Đăng ký ngay</button>
+        </p>
       </div>
-      <div class="field">
-        <label for="auth-password">Mật khẩu</label>
-        <input id="auth-password" type="password" autocomplete="current-password" required minlength="6">
-      </div>
-      <button type="submit" id="auth-submit" class="btn btn-primary">Đăng nhập</button>
-    </form>
-
-    <p class="auth-switch">
-      <span id="auth-switch-text">Chưa có tài khoản?</span>
-      <button type="button" id="auth-switch-btn">Đăng ký ngay</button>
-    </p>
+    </div>
   </div>
 </div>
 
@@ -48,7 +57,10 @@
   <header class="app-header">
     <div class="app-header-top">
       <p class="app-title">Sổ Chi</p>
-      <button type="button" class="btn btn-ghost" id="logout-btn">Đăng xuất</button>
+      <div class="app-header-actions">
+        <button type="button" class="btn btn-primary header-add-btn" id="header-add-btn">+ Thêm giao dịch</button>
+        <button type="button" class="btn btn-ghost" id="logout-btn">Đăng xuất</button>
+      </div>
     </div>
     <div class="month-switcher">
       <button type="button" id="month-prev" aria-label="Tháng trước">‹</button>
@@ -75,19 +87,21 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-heading">
-          <h3>Chi tiêu theo danh mục</h3>
-          <span class="hint">Tháng này</span>
+      <div class="dashboard-grid-2col">
+        <div class="card">
+          <div class="card-heading">
+            <h3>Chi tiêu theo danh mục</h3>
+            <span class="hint">Tháng này</span>
+          </div>
+          <div id="category-bars"><div class="loading-row">Đang tải…</div></div>
         </div>
-        <div id="category-bars"><div class="loading-row">Đang tải…</div></div>
-      </div>
 
-      <div class="card">
-        <div class="card-heading">
-          <h3>Gợi ý tiết kiệm</h3>
+        <div class="card">
+          <div class="card-heading">
+            <h3>Gợi ý tiết kiệm</h3>
+          </div>
+          <div id="savings-tips"><div class="loading-row">Đang tải…</div></div>
         </div>
-        <div id="savings-tips"><div class="loading-row">Đang tải…</div></div>
       </div>
 
       <div class="card">
@@ -128,6 +142,7 @@
   <button type="button" id="fab-add" aria-label="Thêm giao dịch">+</button>
 
   <nav class="bottom-tabs">
+    <p class="sidebar-brand">Sổ Chi</p>
     <button type="button" class="tab-btn active" data-tab="dashboard">
       <span class="glyph">◐</span>Tổng quan
     </button>
@@ -151,6 +166,16 @@
       <button type="button" class="modal-close" data-close-modal="modal-add">✕</button>
     </div>
     <form id="add-form">
+      <button type="button" class="btn btn-outline btn-block" id="paste-toggle-btn">Dán tin nhắn ngân hàng</button>
+      <div id="paste-section" class="hidden">
+        <div class="field">
+          <label for="paste-textarea">Dán nguyên tin nhắn Zalo/ngân hàng</label>
+          <textarea id="paste-textarea" rows="4" placeholder="Ví dụ: TECHCOMBANK&#10;- 54,000 VND&#10;Nội dung   Cà phê...&#10;Số dư   36,421 VND"></textarea>
+        </div>
+        <button type="button" class="btn btn-outline btn-block" id="paste-parse-btn">Tự động điền</button>
+        <div class="paste-divider">hoặc nhập tay</div>
+      </div>
+
       <div class="type-toggle">
         <button type="button" class="type-btn expense active" data-type="expense">Chi</button>
         <button type="button" class="type-btn income" data-type="income">Thu</button>
