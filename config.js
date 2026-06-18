@@ -7,3 +7,7 @@
 // ============================================================
 const SUPABASE_URL = "https://nvzhjcisidwudgrqxjey.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52emhqY2lzaWR3dWRncnF4amV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NzIwNDgsImV4cCI6MjA5NzM0ODA0OH0.Mbe7eV-nrIDoP13d6w0KQIOnJP6mkZs7kpgeWkqCOeQ";
+// ============================================================
+// VAPID public key — dùng để bật Web Push (cảnh báo chi vượt thu).
+// Khóa private tương ứng đặt trong Cloudflare Worker (KHÔNG để ở đây).
+const VAPID_PUBLIC_KEY = "BJqPAET0iqwECCxTbOcUA4tvm6aQVMUtYFeDQ65dHCrbQ_yPNbucxkp54u5T9j9Yw8c_maSDbykUIl4j6Lvcy8s";
