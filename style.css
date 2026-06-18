@@ -77,10 +77,6 @@ button, input, select, textarea { font-family: inherit; }
 /* ---------------- Auth screen ---------------- */
 #auth-screen {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
 }
 
 .auth-card {
@@ -157,6 +153,7 @@ button, input, select, textarea { font-family: inherit; }
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: transform 0.12s ease, opacity 0.12s ease;
 }
 .btn:active { transform: scale(0.97); }
@@ -580,6 +577,25 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13.5px; }
 .checkbox-row input { width: 17px; height: 17px; }
 
+#paste-section { margin-top: 12px; margin-bottom: 4px; }
+#paste-textarea { resize: vertical; min-height: 90px; font-family: var(--font-mono); font-size: 13px; }
+.paste-divider {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 16px 0;
+  position: relative;
+}
+.paste-divider::before, .paste-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  border-top: 1px dashed var(--rule);
+}
+.paste-divider::before { left: 0; }
+.paste-divider::after { right: 0; }
+
 /* ---------------- Toast ---------------- */
 #toast {
   position: fixed;
@@ -599,4 +615,116 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+/* ============================================================
+   DESKTOP — từ 880px trở lên: sidebar thay cho tab bar dưới,
+   dashboard chia 2 cột, header có nút thêm giao dịch trực tiếp,
+   màn đăng nhập có panel trang trí thay vì trống trơn.
+   ============================================================ */
+.app-header-actions { display: flex; align-items: center; gap: 10px; }
+.header-add-btn { display: none; }
+
+.auth-layout { display: flex; min-height: 100vh; }
+.auth-decorative { display: none; }
+.auth-card-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.sidebar-brand { display: none; }
+
+@media (min-width: 880px) {
+  :root { --sidebar-w: 232px; }
+
+  /* --- Màn đăng nhập: chia 2 nửa, nửa trái là panel trang trí --- */
+  .auth-decorative {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    position: relative;
+    background: var(--ink);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(239, 232, 216, 0.07) 0px,
+      rgba(239, 232, 216, 0.07) 1px,
+      transparent 1px,
+      transparent 34px
+    );
+    overflow: hidden;
+  }
+  .auth-decorative-stamp {
+    width: 128px; height: 128px;
+    transform: rotate(-6deg);
+    filter: drop-shadow(0 10px 24px rgba(0,0,0,0.35));
+    margin-bottom: 22px;
+  }
+  .auth-decorative-brand {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--paper);
+    margin: 0 0 10px;
+  }
+  .auth-decorative-tag {
+    font-size: 14px;
+    color: rgba(239, 232, 216, 0.75);
+    text-align: center;
+    line-height: 1.6;
+    max-width: 280px;
+    margin: 0;
+  }
+
+  /* --- App shell: sidebar trái thay cho tab bar dưới --- */
+  .app-header { margin-left: var(--sidebar-w); }
+  main { margin-left: var(--sidebar-w); max-width: 1040px; padding: 28px 32px; }
+  #app-shell { padding-bottom: 0; }
+
+  .header-add-btn { display: inline-flex; }
+  #fab-add { display: none; }
+
+  .bottom-tabs {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    flex-direction: column;
+    align-items: stretch;
+    border-top: none;
+    border-right: 1px solid var(--rule);
+    padding: 0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--rule) 0px, var(--rule) 1px, transparent 1px, transparent 36px
+    );
+    background-position: 0 92px;
+  }
+
+  .sidebar-brand {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    padding: 26px 24px 18px;
+  }
+
+  .tab-btn {
+    flex: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 11px;
+    padding: 12px 24px;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+  }
+  .tab-btn .glyph { font-size: 17px; margin-right: 3px; }
+  .tab-btn.active { border-left-color: var(--red-lacquer); background: var(--red-lacquer-soft); }
+  .tab-btn:hover:not(.active) { background: var(--rule); }
+
+  /* --- Dashboard: 2 cột cho 2 card đầu --- */
+  .dashboard-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .dashboard-grid-2col .card { margin-bottom: 0; }
 }
