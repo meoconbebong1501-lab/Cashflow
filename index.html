@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sổ Chi — Quản lý dòng tiền</title>
+<meta name="description" content="Theo dõi thu chi cá nhân, phân biệt chi phí cố định và không cố định, đặt ngân sách và nhận gợi ý tiết kiệm.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#20283A">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============== AUTH SCREEN ============== -->
+<div id="auth-screen" class="screen hidden">
+  <div class="auth-card">
+    <p class="brand">Sổ Chi</p>
+    <p class="brand-sub">Sổ ghi thu chi cá nhân của bạn</p>
+
+    <div id="auth-error" class="auth-error hidden"></div>
+
+    <form id="auth-form">
+      <div class="field">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="auth-password">Mật khẩu</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required minlength="6">
+      </div>
+      <button type="submit" id="auth-submit" class="btn btn-primary">Đăng nhập</button>
+    </form>
+
+    <p class="auth-switch">
+      <span id="auth-switch-text">Chưa có tài khoản?</span>
+      <button type="button" id="auth-switch-btn">Đăng ký ngay</button>
+    </p>
+  </div>
+</div>
+
+<!-- ============== APP SHELL ============== -->
+<div id="app-shell" class="screen hidden">
+  <header class="app-header">
+    <div class="app-header-top">
+      <p class="app-title">Sổ Chi</p>
+      <button type="button" class="btn btn-ghost" id="logout-btn">Đăng xuất</button>
+    </div>
+    <div class="month-switcher">
+      <button type="button" id="month-prev" aria-label="Tháng trước">‹</button>
+      <span id="month-label" class="month-label"></span>
+      <button type="button" id="month-next" aria-label="Tháng sau">›</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB: Tổng quan -->
+    <section id="tab-dashboard" class="tab-panel">
+      <div class="summary-grid">
+        <div class="summary-cell income">
+          <div class="label">Thu</div>
+          <div class="value" id="sum-income">—</div>
+        </div>
+        <div class="summary-cell expense">
+          <div class="label">Chi</div>
+          <div class="value" id="sum-expense">—</div>
+        </div>
+        <div class="summary-cell balance">
+          <div class="label">Dư</div>
+          <div class="value" id="sum-balance">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h3>Chi tiêu theo danh mục</h3>
+          <span class="hint">Tháng này</span>
+        </div>
+        <div id="category-bars"><div class="loading-row">Đang tải…</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h3>Gợi ý tiết kiệm</h3>
+        </div>
+        <div id="savings-tips"><div class="loading-row">Đang tải…</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h3>Chi phí cố định tháng này</h3>
+          <span class="hint" id="fixed-due-hint"></span>
+        </div>
+        <div id="dashboard-fixed-list"><div class="loading-row">Đang tải…</div></div>
+      </div>
+    </section>
+
+    <!-- TAB: Sổ chi (lịch sử giao dịch) -->
+    <section id="tab-transactions" class="tab-panel hidden">
+      <p class="tab-panel-title">Sổ chi</p>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div id="transactions-list" class="ledger-list"><div class="loading-row">Đang tải…</div></div>
+      </div>
+    </section>
+
+    <!-- TAB: Chi phí cố định -->
+    <section id="tab-recurring" class="tab-panel hidden">
+      <p class="tab-panel-title">Chi phí cố định</p>
+      <div class="card">
+        <div id="recurring-list"><div class="loading-row">Đang tải…</div></div>
+      </div>
+      <button type="button" class="btn btn-outline btn-block" id="add-recurring-btn">+ Thêm chi phí cố định</button>
+    </section>
+
+    <!-- TAB: Ngân sách -->
+    <section id="tab-budgets" class="tab-panel hidden">
+      <p class="tab-panel-title">Ngân sách theo danh mục</p>
+      <div class="card">
+        <div id="budgets-list"><div class="loading-row">Đang tải…</div></div>
+      </div>
+    </section>
+  </main>
+
+  <button type="button" id="fab-add" aria-label="Thêm giao dịch">+</button>
+
+  <nav class="bottom-tabs">
+    <button type="button" class="tab-btn active" data-tab="dashboard">
+      <span class="glyph">◐</span>Tổng quan
+    </button>
+    <button type="button" class="tab-btn" data-tab="transactions">
+      <span class="glyph">≡</span>Sổ chi
+    </button>
+    <button type="button" class="tab-btn" data-tab="recurring">
+      <span class="glyph">↻</span>Cố định
+    </button>
+    <button type="button" class="tab-btn" data-tab="budgets">
+      <span class="glyph">▣</span>Ngân sách
+    </button>
+  </nav>
+</div>
+
+<!-- ============== MODAL: Thêm giao dịch ============== -->
+<div id="modal-add" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>Thêm giao dịch</h3>
+      <button type="button" class="modal-close" data-close-modal="modal-add">✕</button>
+    </div>
+    <form id="add-form">
+      <div class="type-toggle">
+        <button type="button" class="type-btn expense active" data-type="expense">Chi</button>
+        <button type="button" class="type-btn income" data-type="income">Thu</button>
+      </div>
+
+      <div class="field">
+        <label for="add-amount">Số tiền</label>
+        <div class="amount-input-wrap">
+          <input id="add-amount" type="number" inputmode="decimal" min="0" step="1000" required placeholder="0">
+          <span class="amount-suffix">₫</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="add-category">Danh mục</label>
+        <select id="add-category" required></select>
+      </div>
+
+      <div class="field">
+        <label for="add-date">Ngày</label>
+        <input id="add-date" type="date" required>
+      </div>
+
+      <div class="field">
+        <label for="add-note">Ghi chú (không bắt buộc)</label>
+        <input id="add-note" type="text" maxlength="120" placeholder="Ví dụ: cà phê với khách hàng">
+      </div>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary btn-block">Lưu giao dịch</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============== MODAL: Thêm chi phí cố định ============== -->
+<div id="modal-recurring" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>Thêm chi phí cố định</h3>
+      <button type="button" class="modal-close" data-close-modal="modal-recurring">✕</button>
+    </div>
+    <form id="recurring-form">
+      <div class="type-toggle">
+        <button type="button" class="rtype-btn expense active" data-type="expense">Chi</button>
+        <button type="button" class="rtype-btn income" data-type="income">Thu</button>
+      </div>
+
+      <div class="field">
+        <label for="recur-name">Tên</label>
+        <input id="recur-name" type="text" required placeholder="Ví dụ: Tiền nhà, Netflix, Trả góp xe">
+      </div>
+
+      <div class="field">
+        <label for="recur-amount">Số tiền mỗi tháng</label>
+        <div class="amount-input-wrap">
+          <input id="recur-amount" type="number" inputmode="decimal" min="0" step="1000" required placeholder="0">
+          <span class="amount-suffix">₫</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="recur-category">Danh mục</label>
+        <select id="recur-category" required></select>
+      </div>
+
+      <div class="field">
+        <label for="recur-day">Ngày đến hạn trong tháng</label>
+        <input id="recur-day" type="number" min="1" max="31" required placeholder="Ví dụ: 5">
+      </div>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary btn-block">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
