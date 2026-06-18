@@ -585,12 +585,56 @@ async function saveBudget(categoryId) {
 }
 
 // ---------------- Quick add modal ----------------
-document.getElementById('fab-add').addEventListener('click', () => {
+// ---------------- Dán tin nhắn ngân hàng (tự nhận diện số tiền) ----------------
+// Đã test kỹ với mẫu thật Techcombank qua Zalo + nhiều biến thể (VND/đ/VNĐ,
+// có/không dấu cách, viết hoa/thường, copy dính liền hay xuống dòng riêng).
+function parseBankMessage(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return null;
+
+  const amountMatch = text.match(/([+\-])\s*([\d][\d.,]*)\s*(VND|VNĐ|vnđ|[đĐ])/i);
+  if (!amountMatch) return null;
+
+  const sign = amountMatch[1];
+  const numStr = amountMatch[2].replace(/[.,]/g, '');
+  const amount = parseInt(numStr, 10);
+  if (!(amount > 0)) return null;
+  const type = sign === '-' ? 'expense' : 'income';
+
+  let note = null;
+  const noteMatch = text.match(/N[ộo]i dung\s+([\s\S]+?)\s*(?:S[ốo] d[ưu]|$)/i);
+  if (noteMatch) {
+    note = noteMatch[1].replace(/\s+/g, ' ').trim().slice(0, 120);
+  }
+
+  return { type, amount, note };
+}
+
+document.getElementById('paste-toggle-btn').addEventListener('click', () => {
+  document.getElementById('paste-section').classList.toggle('hidden');
+});
+
+document.getElementById('paste-parse-btn').addEventListener('click', () => {
+  const raw = document.getElementById('paste-textarea').value;
+  const result = parseBankMessage(raw);
+  if (!result) {
+    showToast('Không nhận diện được số tiền trong tin nhắn này, anh kiểm tra lại hoặc nhập tay.');
+    return;
+  }
+  setAddType(result.type);
+  document.getElementById('add-amount').value = result.amount;
+  if (result.note) document.getElementById('add-note').value = result.note;
+  showToast('Đã điền số tiền — anh kiểm tra lại và chọn danh mục rồi lưu.');
+});
+
+function openAddTransactionModal() {
   document.getElementById('add-form').reset();
   setAddType('expense');
   document.getElementById('add-date').value = todayLocalISO();
   openModal('modal-add');
-});
+}
+document.getElementById('fab-add').addEventListener('click', openAddTransactionModal);
+document.getElementById('header-add-btn').addEventListener('click', openAddTransactionModal);
 
 function setAddType(type) {
   state.addType = type;
