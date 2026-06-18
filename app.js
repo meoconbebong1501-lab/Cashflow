@@ -585,6 +585,52 @@ async function saveBudget(categoryId) {
 }
 
 // ---------------- Quick add modal ----------------
+// ---------------- Web Push (cảnh báo chi vượt thu) ----------------
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+async function enablePushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showToast('Thiết bị/trình duyệt này không hỗ trợ thông báo push.');
+    return;
+  }
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToast('Anh cần bấm "Cho phép" thông báo để dùng tính năng này.');
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    const subJson = sub.toJSON();
+    const { error } = await sb.from('push_subscriptions').upsert(
+      {
+        user_id: state.user.id,
+        endpoint: subJson.endpoint,
+        p256dh: subJson.keys.p256dh,
+        auth: subJson.keys.auth,
+      },
+      { onConflict: 'endpoint' }
+    );
+    if (error) { console.error(error); showToast('Không lưu được đăng ký thông báo, thử lại sau.'); return; }
+    showToast('Đã bật thông báo cảnh báo trên thiết bị này.');
+  } catch (err) {
+    console.error(err);
+    showToast('Không bật được thông báo, thử lại sau.');
+  }
+}
+
+document.getElementById('push-enable-btn').addEventListener('click', enablePushNotifications);
+
 // ---------------- Dán tin nhắn ngân hàng (tự nhận diện số tiền) ----------------
 // Đã test kỹ với mẫu thật Techcombank qua Zalo + nhiều biến thể (VND/đ/VNĐ,
 // có/không dấu cách, viết hoa/thường, copy dính liền hay xuống dòng riêng).
