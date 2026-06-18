@@ -7,6 +7,26 @@
 // dùng (giả định máy đặt giờ Việt Nam).
 // ============================================================
 
+// Nếu có lỗi JS bất kỳ xảy ra trước khi app render được, hiện thông báo
+// rõ ràng lên màn hình thay vì để trang trống trơn (rất khó debug từ xa).
+function showFatalError(message) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;background:#EFE8D8;color:#9A2E2E;'
+    + 'display:flex;align-items:center;justify-content:center;padding:24px;'
+    + 'text-align:center;font-family:sans-serif;z-index:99999;';
+  el.innerHTML = `<div style="max-width:360px;">
+    <p style="font-weight:700;margin-bottom:8px;">App gặp lỗi khi tải</p>
+    <p style="font-size:13px; word-break:break-word;">${message}</p>
+  </div>`;
+  document.body.appendChild(el);
+}
+window.addEventListener('error', (e) => showFatalError(e.message || 'Lỗi không xác định.'));
+
+if (!window.supabase) {
+  showFatalError('Không tải được thư viện Supabase từ CDN (cdn.jsdelivr.net). Kiểm tra mạng, tắt ad-blocker/extension chặn quảng cáo rồi tải lại trang.');
+  throw new Error('window.supabase chưa sẵn sàng — script CDN có thể bị chặn hoặc chưa tải xong.');
+}
+
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ---------------- State ----------------
