@@ -27,7 +27,7 @@ if (!window.supabase) {
   throw new Error('window.supabase chưa sẵn sàng — script CDN có thể bị chặn hoặc chưa tải xong.');
 }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ---------------- State ----------------
 const state = {
@@ -107,10 +107,10 @@ document.getElementById('auth-form').addEventListener('submit', async (e) => {
 
   try {
     if (authMode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
     } else {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await sb.auth.signUp({ email, password });
       if (error) throw error;
       showToast('Đăng ký thành công! Nếu cần xác nhận email, hãy kiểm tra hộp thư.');
     }
@@ -132,10 +132,10 @@ function translateAuthError(msg) {
 }
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
 });
 
-supabase.auth.onAuthStateChange((_event, session) => {
+sb.auth.onAuthStateChange((_event, session) => {
   if (session && session.user) {
     state.user = session.user;
     showAppShell();
@@ -188,7 +188,7 @@ async function loadAllData() {
 }
 
 async function loadCategories() {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('categories')
     .select('*')
     .order('is_default', { ascending: false })
@@ -198,13 +198,13 @@ async function loadCategories() {
 }
 
 async function loadRecurringTemplates() {
-  const { data, error } = await supabase.from('recurring_templates').select('*').order('day_of_month');
+  const { data, error } = await sb.from('recurring_templates').select('*').order('day_of_month');
   if (error) { console.error(error); return; }
   state.recurringTemplates = data || [];
 }
 
 async function loadBudgets() {
-  const { data, error } = await supabase.from('budgets').select('*');
+  const { data, error } = await sb.from('budgets').select('*');
   if (error) { console.error(error); return; }
   state.budgets = data || [];
 }
@@ -212,7 +212,7 @@ async function loadBudgets() {
 async function loadTransactionsForMonth() {
   const from = toLocalISO(startOfMonth(state.currentMonth));
   const to = toLocalISO(endOfMonth(state.currentMonth));
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('transactions')
     .select('*')
     .gte('occurred_on', from)
@@ -229,7 +229,7 @@ async function loadPastMonthsExpenseTotals(monthsBack) {
   const to = toLocalISO(endOfMonth(endMonth));
   if (endMonth < startMonth) return {};
 
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('transactions')
     .select('category_id, amount')
     .eq('type', 'expense')
@@ -412,7 +412,7 @@ function renderTransactionsTab() {
 
 async function deleteTransaction(id) {
   if (!confirm('Xóa giao dịch này?')) return;
-  const { error } = await supabase.from('transactions').delete().eq('id', id);
+  const { error } = await sb.from('transactions').delete().eq('id', id);
   if (error) { console.error(error); showToast('Không xóa được, thử lại sau.'); return; }
   await loadTransactionsForMonth();
   renderAll();
@@ -471,7 +471,7 @@ async function markRecurringPaid(templateId) {
   const day = Math.min(r.day_of_month, daysInMonth(state.currentMonth));
   const date = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), day);
 
-  const { error } = await supabase.from('transactions').insert({
+  const { error } = await sb.from('transactions').insert({
     user_id: state.user.id,
     category_id: r.category_id,
     recurring_template_id: r.id,
@@ -511,7 +511,7 @@ document.getElementById('recurring-form').addEventListener('submit', async (e) =
     return;
   }
 
-  const { error } = await supabase.from('recurring_templates').insert({
+  const { error } = await sb.from('recurring_templates').insert({
     user_id: state.user.id,
     name,
     amount,
@@ -574,9 +574,9 @@ async function saveBudget(categoryId) {
   const existing = state.budgets.find((b) => b.category_id === categoryId);
   let error;
   if (existing) {
-    ({ error } = await supabase.from('budgets').update({ monthly_limit: value }).eq('id', existing.id));
+    ({ error } = await sb.from('budgets').update({ monthly_limit: value }).eq('id', existing.id));
   } else {
-    ({ error } = await supabase.from('budgets').insert({ user_id: state.user.id, category_id: categoryId, monthly_limit: value }));
+    ({ error } = await sb.from('budgets').insert({ user_id: state.user.id, category_id: categoryId, monthly_limit: value }));
   }
   if (error) { console.error(error); showToast('Không lưu được ngân sách.'); return; }
   await loadBudgets();
@@ -611,7 +611,7 @@ document.getElementById('add-form').addEventListener('submit', async (e) => {
     return;
   }
 
-  const { error } = await supabase.from('transactions').insert({
+  const { error } = await sb.from('transactions').insert({
     user_id: state.user.id,
     category_id,
     type: state.addType,
