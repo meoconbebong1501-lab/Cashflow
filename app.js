@@ -816,13 +816,59 @@ async function renderGoals() {
     }
 
     const monthlyNeeded = done ? 0 : Math.ceil(remaining / months);
+    const dailyNeeded = done ? 0 : (days > 0 ? Math.ceil(remaining / days) : 0);
+
+    // Câu động viên theo tiến độ, xoay vòng theo ngày trong năm
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const quotes = pct >= 100 ? [
+      '🎉 Xuất sắc! Anh đã đạt được mục tiêu này rồi!',
+      '🏆 Tuyệt vời! Kỷ luật tài chính của anh thật đáng ngưỡng mộ!',
+      '🎊 Hoàn thành mục tiêu! Hãy tự thưởng cho mình một điều gì đó nho nhỏ nhé!',
+    ] : pct >= 75 ? [
+      '🔥 Gần đến đích rồi! Chỉ còn ' + formatVND(remaining) + ' nữa thôi!',
+      '💪 Sắp xong rồi! Đừng bỏ cuộc lúc này nhé!',
+      '⚡ Đã đi được ' + pct + '% chặng đường — tiếp tục phát huy!',
+      '🌟 Anh đang làm rất tốt! Đích đến đã ở trước mắt!',
+    ] : pct >= 50 ? [
+      '👏 Đã qua nửa chặng đường! Momentum đang rất tốt!',
+      '🚀 Hơn nửa rồi! Giữ vững nhịp độ này là tới đích thôi!',
+      '💡 Mỗi ngày để dành một ít — thói quen nhỏ tạo ra kết quả lớn.',
+      '🎯 ' + pct + '% hoàn thành! Anh đang đi đúng hướng rồi!',
+    ] : pct >= 25 ? [
+      '🌱 Khởi đầu tốt! Hành trình ngàn dặm bắt đầu từ bước đầu tiên.',
+      '📈 Đang tăng trưởng tốt! Kiên trì thêm một chút nữa nhé!',
+      '💰 Tiền để dành giống như cây trồng — cần thời gian để lớn.',
+      '🎯 Mỗi đồng để dành hôm nay là một bước gần hơn đến mục tiêu.',
+    ] : [
+      '🌅 Hành trình bắt đầu! Bước đầu tiên luôn là khó nhất.',
+      '💫 Mục tiêu rõ ràng là nửa chặng đường đã đi được rồi!',
+      '🏁 Đã đặt mục tiêu là đã tiến bộ hơn 90% người khác rồi!',
+      '✨ Mỗi hành trình lớn đều bắt đầu từ bước đầu tiên nhỏ bé.',
+    ];
+    const quote = quotes[dayOfYear % quotes.length];
+
     let monthlyHtml = '';
     if (done) {
-      monthlyHtml = `<div class="goal-monthly-needed done">✅ Đã để dành đủ tiền!</div>`;
+      monthlyHtml = `
+        <div class="goal-motivate done">${quote}</div>`;
     } else if (days < 0) {
-      monthlyHtml = `<div class="goal-monthly-needed overdue">⚠️ Đã quá hạn — còn thiếu ${formatVND(remaining)}</div>`;
+      monthlyHtml = `
+        <div class="goal-monthly-needed overdue">⚠️ Đã quá hạn — còn thiếu ${formatVND(remaining)}</div>
+        <div class="goal-motivate overdue">${quote}</div>`;
     } else {
-      monthlyHtml = `<div class="goal-monthly-needed">📅 Cần để dành thêm ~<strong>${formatVND(monthlyNeeded)}/tháng</strong> trong ${months} tháng tới</div>`;
+      monthlyHtml = `
+        <div class="goal-pace-grid">
+          <div class="goal-pace-cell">
+            <span class="goal-pace-label">Cần để dành/ngày</span>
+            <span class="goal-pace-value">${formatVND(dailyNeeded)}</span>
+          </div>
+          <div class="goal-pace-sep"></div>
+          <div class="goal-pace-cell">
+            <span class="goal-pace-label">Cần để dành/tháng</span>
+            <span class="goal-pace-value">${formatVND(monthlyNeeded)}</span>
+          </div>
+        </div>
+        <div class="goal-motivate">${quote}</div>`;
     }
 
     return `<div class="goal-card ${done ? 'completed' : ''}" data-goal-id="${g.id}">
