@@ -819,9 +819,9 @@ async function renderGoals() {
     if (done) {
       monthlyHtml = `<div class="goal-monthly-needed done">✅ Đã để dành đủ tiền!</div>`;
     } else if (days < 0) {
-      monthlyHtml = `<div class="goal-monthly-needed overdue">⚠️ Đã quá hạn — còn thiếu ${fmt(remaining)}</div>`;
+      monthlyHtml = `<div class="goal-monthly-needed overdue">⚠️ Đã quá hạn — còn thiếu ${formatVND(remaining)}</div>`;
     } else {
-      monthlyHtml = `<div class="goal-monthly-needed">📅 Cần để dành thêm ~<strong>${fmt(monthlyNeeded)}/tháng</strong> trong ${months} tháng tới</div>`;
+      monthlyHtml = `<div class="goal-monthly-needed">📅 Cần để dành thêm ~<strong>${formatVND(monthlyNeeded)}/tháng</strong> trong ${months} tháng tới</div>`;
     }
 
     return `<div class="goal-card ${done ? 'completed' : ''}" data-goal-id="${g.id}">
@@ -836,8 +836,8 @@ async function renderGoals() {
     <div class="goal-progress-bar ${done ? 'done' : ''}" style="width:${pct}%"></div>
   </div>
   <div class="goal-stats">
-    <span>Đã để dành: <strong>${fmt(saved)}</strong></span>
-    <span><strong>${pct}%</strong> / ${fmt(target)}</span>
+    <span>Đã để dành: <strong>${formatVND(saved)}</strong></span>
+    <span><strong>${pct}%</strong> / ${formatVND(target)}</span>
   </div>
   ${monthlyHtml}
   <div class="goal-actions">
