@@ -6,7 +6,7 @@
 // những request đó luôn đi thẳng ra mạng để dữ liệu luôn mới.
 // ============================================================
 
-const CACHE_NAME = 'so-chi-v1';
+const CACHE_NAME = 'so-chi-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -37,23 +37,39 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // Chỉ xử lý GET, cùng origin (tài nguyên tĩnh của app này).
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req)
+  // HTML (index.html, ./): network-first để luôn lấy bản mới nhất khi deploy.
+  // CSS/JS/icon: cache-first (nhanh hơn, và version CACHE_NAME đã đổi sẽ tự invalidate).
+  const isHTML = url.pathname.endsWith('.html') || url.pathname.endsWith('/') || url.pathname === '/Cashflow/';
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
         .then((res) => {
           if (res.ok) {
-            const resClone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(req, clone));
           }
           return res;
         })
-        .catch(() => cached);
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((res) => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
+        }
+        return res;
+      }).catch(() => cached);
     })
   );
 });
