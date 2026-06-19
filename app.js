@@ -751,3 +751,185 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
+
+// ============================================================
+// MỤC TIÊU TIẾT KIỆM
+// ============================================================
+
+// ---------- Helpers tính toán ----------
+function monthsBetween(from, to) {
+  return (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+}
+function daysUntil(dateStr) {
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((target - now) / 86400000);
+}
+
+// ---------- Render danh sách mục tiêu ----------
+async function renderGoals() {
+  const listEl = document.getElementById('goals-list');
+  listEl.innerHTML = '<div class="loading-row">Đang tải…</div>';
+
+  const { data: goals, error } = await sb.from('goals')
+    .select('*, goal_contributions(amount)')
+    .eq('user_id', state.user.id)
+    .order('target_date', { ascending: true });
+
+  if (error) { listEl.innerHTML = '<div class="loading-row">Lỗi tải dữ liệu.</div>'; return; }
+  if (!goals || goals.length === 0) { listEl.innerHTML = ''; return; }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  listEl.innerHTML = goals.map(g => {
+    const saved = (g.goal_contributions || []).reduce((s, c) => s + Number(c.amount), 0);
+    const target = Number(g.target_amount);
+    const pct = Math.min(100, Math.round(saved / target * 100));
+    const remaining = Math.max(0, target - saved);
+    const days = daysUntil(g.target_date);
+    const months = Math.max(1, monthsBetween(today, new Date(g.target_date)));
+    const done = saved >= target;
+
+    let deadlineClass = '';
+    let deadlineText = '';
+    if (done) {
+      deadlineText = '🎉 Đã đạt mục tiêu!';
+    } else if (days < 0) {
+      deadlineClass = 'overdue';
+      deadlineText = `Đã quá hạn ${Math.abs(days)} ngày`;
+    } else if (days <= 30) {
+      deadlineClass = 'soon';
+      deadlineText = `Còn ${days} ngày`;
+    } else {
+      deadlineText = `Còn ${days} ngày · ${new Date(g.target_date).toLocaleDateString('vi-VN')}`;
+    }
+
+    const monthlyNeeded = done ? 0 : Math.ceil(remaining / months);
+    let monthlyHtml = '';
+    if (done) {
+      monthlyHtml = `<div class="goal-monthly-needed done">✅ Đã để dành đủ tiền!</div>`;
+    } else if (days < 0) {
+      monthlyHtml = `<div class="goal-monthly-needed overdue">⚠️ Đã quá hạn — còn thiếu ${fmt(remaining)}</div>`;
+    } else {
+      monthlyHtml = `<div class="goal-monthly-needed">📅 Cần để dành thêm ~<strong>${fmt(monthlyNeeded)}/tháng</strong> trong ${months} tháng tới</div>`;
+    }
+
+    return `<div class="goal-card ${done ? 'completed' : ''}" data-goal-id="${g.id}">
+  <div class="goal-card-header">
+    <div class="goal-emoji">${g.emoji || '🎯'}</div>
+    <div class="goal-meta">
+      <div class="goal-name">${g.name}</div>
+      <div class="goal-deadline ${deadlineClass}">${deadlineText}</div>
+    </div>
+  </div>
+  <div class="goal-progress-bar-wrap">
+    <div class="goal-progress-bar ${done ? 'done' : ''}" style="width:${pct}%"></div>
+  </div>
+  <div class="goal-stats">
+    <span>Đã để dành: <strong>${fmt(saved)}</strong></span>
+    <span><strong>${pct}%</strong> / ${fmt(target)}</span>
+  </div>
+  ${monthlyHtml}
+  <div class="goal-actions">
+    <button type="button" class="btn btn-primary" onclick="openContributeModal('${g.id}','${g.name.replace(/'/g,"\\'")}','${g.emoji||'🎯'}')">+ Nạp tiền vào quỹ</button>
+    <button type="button" class="btn btn-outline" onclick="openEditGoalModal('${g.id}')">Sửa</button>
+    <button type="button" class="btn btn-outline" onclick="deleteGoal('${g.id}','${g.name.replace(/'/g,"\\'")}')">Xoá</button>
+  </div>
+</div>`;
+  }).join('');
+}
+
+// ---------- Mở modal tạo/sửa mục tiêu ----------
+function openAddGoalModal() {
+  document.getElementById('goal-form').reset();
+  document.getElementById('goal-edit-id').value = '';
+  document.getElementById('modal-goal-title').textContent = 'Thêm mục tiêu tiết kiệm';
+  document.getElementById('goal-submit-btn').textContent = 'Tạo mục tiêu';
+  // Ngày mặc định: 3 tháng tới
+  const d = new Date();
+  d.setMonth(d.getMonth() + 3);
+  document.getElementById('goal-date').value = d.toISOString().slice(0, 10);
+  document.getElementById('modal-goal').classList.remove('hidden');
+}
+
+async function openEditGoalModal(goalId) {
+  const { data: g } = await sb.from('goals').select('*').eq('id', goalId).single();
+  if (!g) return;
+  document.getElementById('goal-edit-id').value = g.id;
+  document.getElementById('goal-name').value = g.name;
+  document.getElementById('goal-emoji').value = g.emoji || '';
+  document.getElementById('goal-amount').value = g.target_amount;
+  document.getElementById('goal-date').value = g.target_date;
+  document.getElementById('goal-notes').value = g.notes || '';
+  document.getElementById('modal-goal-title').textContent = 'Sửa mục tiêu';
+  document.getElementById('goal-submit-btn').textContent = 'Lưu thay đổi';
+  document.getElementById('modal-goal').classList.remove('hidden');
+}
+
+document.getElementById('add-goal-btn').addEventListener('click', openAddGoalModal);
+
+document.getElementById('goal-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const editId = document.getElementById('goal-edit-id').value;
+  const payload = {
+    user_id: state.user.id,
+    name: document.getElementById('goal-name').value.trim(),
+    emoji: document.getElementById('goal-emoji').value.trim() || '🎯',
+    target_amount: parseInt(document.getElementById('goal-amount').value, 10),
+    target_date: document.getElementById('goal-date').value,
+    notes: document.getElementById('goal-notes').value.trim() || null,
+  };
+  let error;
+  if (editId) {
+    ({ error } = await sb.from('goals').update(payload).eq('id', editId));
+  } else {
+    ({ error } = await sb.from('goals').insert(payload));
+  }
+  if (error) { showToast('Lỗi lưu mục tiêu: ' + error.message); return; }
+  document.getElementById('modal-goal').classList.add('hidden');
+  showToast(editId ? 'Đã cập nhật mục tiêu.' : 'Đã tạo mục tiêu mới!');
+  renderGoals();
+});
+
+// ---------- Nạp tiền vào quỹ ----------
+function openContributeModal(goalId, goalName, emoji) {
+  document.getElementById('contribute-form').reset();
+  document.getElementById('contribute-goal-id').value = goalId;
+  document.getElementById('contribute-goal-name').textContent = emoji + ' ' + goalName;
+  document.getElementById('contribute-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('modal-contribute').classList.remove('hidden');
+}
+
+document.getElementById('contribute-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await sb.from('goal_contributions').insert({
+    goal_id: document.getElementById('contribute-goal-id').value,
+    user_id: state.user.id,
+    amount: parseInt(document.getElementById('contribute-amount').value, 10),
+    note: document.getElementById('contribute-note').value.trim() || null,
+    occurred_on: document.getElementById('contribute-date').value,
+  });
+  if (error) { showToast('Lỗi nạp tiền: ' + error.message); return; }
+  document.getElementById('modal-contribute').classList.add('hidden');
+  showToast('Đã nạp tiền vào quỹ!');
+  renderGoals();
+});
+
+// ---------- Xoá mục tiêu ----------
+async function deleteGoal(goalId, goalName) {
+  if (!confirm(`Xoá mục tiêu "${goalName}"? Toàn bộ lịch sử nạp tiền vào quỹ này cũng bị xoá.`)) return;
+  const { error } = await sb.from('goals').delete().eq('id', goalId);
+  if (error) { showToast('Lỗi xoá: ' + error.message); return; }
+  showToast('Đã xoá mục tiêu.');
+  renderGoals();
+}
+
+// ---------- Load khi chọn tab ----------
+const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+// hook vào tab-btn click để tải goals khi cần
+document.querySelectorAll('.tab-btn[data-tab="goals"]').forEach(btn => {
+  btn.addEventListener('click', () => renderGoals());
+});
