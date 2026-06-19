@@ -6,7 +6,7 @@
 // những request đó luôn đi thẳng ra mạng để dữ liệu luôn mới.
 // ============================================================
 
-const CACHE_NAME = 'so-chi-v3';
+const CACHE_NAME = 'so-chi-v4';
 const CORE_ASSETS = [
   './',
   './index.html',
