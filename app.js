@@ -164,6 +164,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 function setActiveTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('hidden', p.id !== `tab-${tab}`));
+  if (tab === 'goals') renderGoals();
 }
 
 // ---------------- Month switcher ----------------
@@ -936,7 +937,4 @@ async function deleteGoal(goalId, goalName) {
 
 // ---------- Load khi chọn tab ----------
 const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
-// hook vào tab-btn click để tải goals khi cần
-document.querySelectorAll('.tab-btn[data-tab="goals"]').forEach(btn => {
-  btn.addEventListener('click', () => renderGoals());
-});
+// renderGoals được gọi trong setActiveTab khi tab === "goals"
