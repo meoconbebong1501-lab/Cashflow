@@ -728,3 +728,81 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
   }
   .dashboard-grid-2col .card { margin-bottom: 0; }
 }
+
+/* ============== MỤC TIÊU TIẾT KIỆM ============== */
+.goal-card {
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.goal-card.completed { opacity: 0.65; }
+.goal-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.goal-emoji { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+.goal-meta { flex: 1; min-width: 0; }
+.goal-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 2px; }
+.goal-deadline {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.goal-deadline.overdue { color: var(--expense); font-weight: 600; }
+.goal-deadline.soon { color: #b45309; font-weight: 600; }
+
+.goal-progress-bar-wrap {
+  background: var(--rule);
+  border-radius: 99px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.goal-progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--income);
+  transition: width 0.4s ease;
+}
+.goal-progress-bar.done { background: #16a34a; }
+
+.goal-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+.goal-stats strong { color: var(--ink); }
+
+.goal-monthly-needed {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: #166534;
+  margin-bottom: 12px;
+}
+.goal-monthly-needed.overdue {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+.goal-monthly-needed.done {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.goal-actions {
+  display: flex;
+  gap: 8px;
+}
+.goal-actions .btn { flex: 1; font-size: 0.82rem; padding: 7px 10px; }
+
+#goals-list:empty::after { content: "Chưa có mục tiêu nào. Bấm + để thêm."; display: block; color: var(--ink-soft); text-align: center; padding: 32px 0; font-size: 0.9rem; }
