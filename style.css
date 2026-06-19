@@ -808,3 +808,64 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
 .goal-actions .btn { flex: 1; font-size: 0.82rem; padding: 7px 10px; }
 
 #goals-list:empty::after { content: "Chưa có mục tiêu nào. Bấm + để thêm."; display: block; color: var(--ink-soft); text-align: center; padding: 32px 0; font-size: 0.9rem; }
+
+/* Pace grid: số tiền cần/ngày và /tháng */
+.goal-pace-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.goal-pace-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  gap: 3px;
+}
+.goal-pace-sep {
+  width: 1px;
+  background: var(--rule);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+.goal-pace-label {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.3;
+}
+.goal-pace-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--income);
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+/* Câu động viên */
+.goal-motivate {
+  font-size: 0.82rem;
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.goal-motivate.done {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.goal-motivate.overdue {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
