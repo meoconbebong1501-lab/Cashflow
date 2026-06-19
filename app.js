@@ -778,7 +778,14 @@ async function renderGoals() {
     .eq('user_id', state.user.id)
     .order('target_date', { ascending: true });
 
-  if (error) { listEl.innerHTML = '<div class="loading-row">Lỗi tải dữ liệu.</div>'; return; }
+  if (error) {
+    // Bảng chưa được tạo (chưa chạy goals_migration.sql) hoặc lỗi khác
+    const msg = error.code === '42P01'
+      ? 'Chưa thiết lập bảng dữ liệu. Anh cần chạy file <code>goals_migration.sql</code> trong Supabase SQL Editor trước.'
+      : 'Lỗi tải dữ liệu: ' + error.message;
+    listEl.innerHTML = `<div class="loading-row" style="color:var(--expense)">${msg}</div>`;
+    return;
+  }
   if (!goals || goals.length === 0) { listEl.innerHTML = ''; return; }
 
   const today = new Date();
