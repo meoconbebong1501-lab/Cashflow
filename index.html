@@ -145,6 +145,13 @@
         <div id="budgets-list"><div class="loading-row">Đang tải…</div></div>
       </div>
     </section>
+
+    <!-- TAB: Mục tiêu tiết kiệm -->
+    <section id="tab-goals" class="tab-panel hidden">
+      <p class="tab-panel-title">Mục tiêu tiết kiệm</p>
+      <div id="goals-list"><div class="loading-row">Đang tải…</div></div>
+      <button type="button" class="btn btn-outline btn-block" id="add-goal-btn" style="margin-top:12px">+ Thêm mục tiêu mới</button>
+    </section>
   </main>
 
   <button type="button" id="fab-add" aria-label="Thêm giao dịch">+</button>
@@ -162,6 +169,9 @@
     </button>
     <button type="button" class="tab-btn" data-tab="budgets">
       <span class="glyph">▣</span>Ngân sách
+    </button>
+    <button type="button" class="tab-btn" data-tab="goals">
+      <span class="glyph">◎</span>Mục tiêu
     </button>
   </nav>
 </div>
@@ -257,6 +267,77 @@
 
       <div class="modal-actions">
         <button type="submit" class="btn btn-primary btn-block">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============== MODAL: Tạo mục tiêu ============== -->
+<div id="modal-goal" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3 id="modal-goal-title">Thêm mục tiêu tiết kiệm</h3>
+      <button type="button" class="modal-close" data-close-modal="modal-goal">✕</button>
+    </div>
+    <form id="goal-form">
+      <input type="hidden" id="goal-edit-id">
+      <div class="field">
+        <label for="goal-name">Tên mục tiêu</label>
+        <input id="goal-name" type="text" required placeholder="Ví dụ: Mac Mini M4, Du lịch Đà Lạt…">
+      </div>
+      <div class="field">
+        <label for="goal-emoji">Biểu tượng</label>
+        <input id="goal-emoji" type="text" maxlength="2" placeholder="🎯" style="width:60px;font-size:1.4rem;text-align:center">
+      </div>
+      <div class="field">
+        <label for="goal-amount">Số tiền cần (₫)</label>
+        <div class="amount-input-wrap">
+          <input id="goal-amount" type="number" inputmode="decimal" min="1000" step="1000" required placeholder="0">
+          <span class="amount-suffix">₫</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="goal-date">Ngày muốn đạt được</label>
+        <input id="goal-date" type="date" required>
+      </div>
+      <div class="field">
+        <label for="goal-notes">Ghi chú (không bắt buộc)</label>
+        <input id="goal-notes" type="text" maxlength="120" placeholder="Ví dụ: Dùng thay MacBook cũ">
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary btn-block" id="goal-submit-btn">Tạo mục tiêu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============== MODAL: Nạp tiền vào quỹ ============== -->
+<div id="modal-contribute" class="modal hidden">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>Nạp tiền vào quỹ</h3>
+      <button type="button" class="modal-close" data-close-modal="modal-contribute">✕</button>
+    </div>
+    <form id="contribute-form">
+      <input type="hidden" id="contribute-goal-id">
+      <p id="contribute-goal-name" style="font-weight:600;margin-bottom:16px;font-size:1.05rem"></p>
+      <div class="field">
+        <label for="contribute-amount">Số tiền nạp (₫)</label>
+        <div class="amount-input-wrap">
+          <input id="contribute-amount" type="number" inputmode="decimal" min="1000" step="1000" required placeholder="0">
+          <span class="amount-suffix">₫</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="contribute-date">Ngày</label>
+        <input id="contribute-date" type="date" required>
+      </div>
+      <div class="field">
+        <label for="contribute-note">Ghi chú (không bắt buộc)</label>
+        <input id="contribute-note" type="text" maxlength="120" placeholder="Ví dụ: tiết kiệm tháng 7">
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary btn-block">Nạp vào quỹ</button>
       </div>
     </form>
   </div>
