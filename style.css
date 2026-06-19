@@ -649,7 +649,7 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
 .auth-card-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .sidebar-brand { display: none; width: 0; overflow: hidden; flex: 0 0 0; padding: 0; margin: 0; }
 
-@media (min-width: 880px) {
+@media (min-width: 1024px) {
   :root { --sidebar-w: 232px; }
 
   /* --- Màn đăng nhập: chia 2 nửa, nửa trái là panel trang trí --- */
