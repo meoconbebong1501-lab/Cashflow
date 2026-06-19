@@ -270,6 +270,11 @@ async function renderDashboard() {
 
   document.getElementById('sum-income').textContent = formatVND(income);
   document.getElementById('sum-expense').textContent = formatVND(expense);
+  const balCell = document.querySelector('.summary-cell.balance');
+  if (balCell) {
+    balCell.classList.toggle('positive', balance >= 0);
+    balCell.classList.toggle('negative', balance < 0);
+  }
   const balEl = document.getElementById('sum-balance');
   balEl.textContent = (balance < 0 ? '-' : '') + formatVND(Math.abs(balance));
   balEl.classList.toggle('negative', balance < 0);
