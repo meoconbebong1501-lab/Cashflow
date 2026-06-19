@@ -461,10 +461,16 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
   display: flex;
   z-index: 20;
   padding-bottom: env(safe-area-inset-bottom);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
 }
+.bottom-tabs::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
 .tab-btn {
-  flex: 1;
+  flex: 0 0 72px; /* chiều rộng cố định mỗi tab, không co lại */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -476,11 +482,22 @@ main { padding: 18px; max-width: 720px; margin: 0 auto; }
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
-  padding: 0 2px;
-  min-width: 0;
+  padding: 0 4px;
 }
 .tab-btn .glyph { font-size: 16px; }
 .tab-btn.active { color: var(--red-lacquer); }
+
+/* Mờ dần ở mép phải tab bar để gợi ý còn tab nữa khi swipe */
+.bottom-tabs::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  top: 0;
+  flex: 0 0 24px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, var(--paper-card));
+  pointer-events: none;
+}
 
 /* FAB — dấu mộc (stamp) để thêm giao dịch */
 #fab-add {
